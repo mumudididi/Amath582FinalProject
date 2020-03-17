@@ -1,1 +1,1 @@
-# Amath582FinalProject
+# Amath582FinalProject: Time-Scale Modification
