@@ -143,18 +143,92 @@ platforms. One natural question for those who are curious to ask is, "what is th
 \noindent One simple solution to this is skipping points when faster playback speed is needed or doubling points when lower playback speed is needed; however, this introduces audible artifact. Therefore, more advanced algorithms for TSM are needed. \\
 In the following sections, two algorithms are explored and discussed. The first one is a naive, Overlapping-add(OLA) method; the second one is Phase Vocoder(PV) that is based on Short-Time Fourier Transform(STFT) and OLA.  
 \section{Theoretical Background}
+\subsection{Notations}
+\begin{enumerate}[label=\roman*)]
+  \item $H_a$: analysis window hop size 
+  \item $H_s$: synthesis window hop size
+  \item $L$: window length. It is also length of each section 
+  \item $x_k(m)$ or $y_k(m)$: the m-th element of the k-th segment
+\end{enumerate}
+
 \subsection{Overlapping Add:}
+The idea of Overlapping-add is pretty simple. The main idea in this method is just cutting the time-domain signal into pieces and crossfading them in order to realize TSM.  \\
+Cutting up the signal $x(n)$ is done with a window function $w(x)$ of length $L$. It can be thinking of either sliding the signal across the window centering at the origin: 
+\begin{equation}
+ x_{k}(n) =x(n+kH_a)w(n) 
+\label{eq : }
+\end{equation}
+or sliding the window along the signal started from the origin: 
+
+\begin{equation}
+ x_{k}(n) =x(n)w(n-kH_a) 
+\label{eq : }
+\end{equation}
+the windowed \textit{analysis frame} can be represented as: 
+\begin{equation}
+x_k(n) = \begin{cases}
+        x(n +kH_a),  \text{\qquad if $n = 1,2,3,...,L$}\\
+        0, \text{\qquad  \qquad \qquad otherwise} 
+\end{cases}
+\label{eq : }
+\end{equation}
+The \textit{synthesis frame} can be constructed by removing the effect of the window when overlapping as follow: 
+
+\begin{equation}
+        y_k(n) = \frac{x_{k}(n)}{\sum_{r\in \mathbb{Z}}^{\infty}w(n-rH_s) }
+\label{eq : }
+\end{equation}
+After getting the frames, we need to stitch them together to get the time domain scaled signal: 
+\begin{equation}
+        y(n) =\sum_{k \in \mathbb{Z}} y_{k}(n - kH_s) \label{eq:}
+\end{equation}
+\textcolor{red}{need pictures here: y(n)}
 \subsection{STFT Analysis: }
+\subsubsection{Fourier Transform View of STFT:}
+Discrete STFT is DFT on every segment of the input signal. In the context of TSM, we use a window function $w(x)$ to cut the signal. STFT analysis equation is the following:
+\begin{equation}
+        X(mH_a,k) = \sum_{n=0}^{n= N-1} x(n+mH_a) w(n) e^{2 \pi ik \frac{n}{N}} 
+\end{equation}
+window function in this context serves as a tapper function. In this project, hamming window is used instead of a rectangular window for two reasons. Firstly, DFT assumes the signal is periodic, hamming zeros signals out at the two ends to satisfy the periodicity avoiding introducing high frequency components. Secondly, hamming window is used to avoid spectrum leakage. Windows can be viewed as filters in frequency domain(explained in the following section). Due to that the frequency response of rectangular window has higher side-lobes, when convolving with the signal, it picks up more unwanted frequencies outside of the target frequency bin, which would lead to a noisy reconstruct signal. Although hamming window has lower side-lobes, it has a wider main lobe, which will lead to smearing(this is obvious when playing back at a lower speed). Hence there is a trade off between what kind of window to use.
+\subsubsection{Filter Bank View of STFT:}
+STFT can be viewed as a convolution.\\ 
+\[
+        \begin{aligned}
+        X(mH_a,k) &= \sum_{n=0}^{n= N-1} x(n+mH_a) w(n) e^{2 \pi ik \frac{n}{N}}\\ 
+                  &=\sum_{n=0}^{n=N-1}(x(n)e^{-i\omega_k n})w(n-mH_a)\\
+                  &=  (x(n) e^{-i\omega_k n} )* w(n)
+\end{aligned}
+\]
+where  $x(n) e^{-i\omega_k n}$ can be view as a modulation of $X(\omega)$\\
+\textcolor{red}{need pictures here: filter bank view}\\
+the Filter Bank view enable us to interpret $X(m,k)$ as the frequency components of $x_m(n)$ on the channel where $\omega_k=\frac{2\pi k}{N}$ \\ 
+Noticed that frequencies in this formula is also discretized given by $\omega_{k} = \frac{2\pi k}{N}$, $k=0,1,2...N-1$. Frequency resolution is determined once a window length is selected. The base band will be $\frac{2\pi}{N}$. The larger length of the window, the finer the frequency resolution. 
 \subsection{STFT Synthesis:}
+Between STFT analysis and STFT synthesis, there is a processing step, which in our project is done with phase vocoder. $X^{+}(m,k)$ is the modified signal after phase vocoder. Detailed phase vocoder is discussed in the next section. 
+STFT synthesis: 
+\begin{equation}
+        y_k(n) = \frac{1}{N}\sum_{k=0}^{N-1} X^{+}(m,k) e^{\frac{2\pi i k n}{N}} 
+\end{equation}
+Noticed that our goal is Overlapping add, therefore another window function will be in used to smooth out the signal. At the end, we need to remove the effect of the window. The synthesis frame are derived as:
+\begin{equation}
+        y^{*}_k(n) = \frac{w(n)y_k(n)}{\sum_{m\in \mathbb{Z}}w(n-mH_s)^2}
+\end{equation}
+\subsubsection*{STFT OLA requirements:}
+1. 50\% overlap to avoid information loss\\
+2. bandwidth of the window HAS to be wider than than the base band. otherwise leads to loss of freq information\\
+3. step/hop size
+
+
 \subsection{Phase Vocoder: }
-
-
-
-
-
-
 \section{Algorithm implementation and development }
 \section{Computational Result}
+things can be talk about: \\
+0. OLA result: phase not aligned and can not modify frequency information\\
+1. $\frac{H_s}{H_a}$\\
+2. what happen if taking too narrow of a window say N=256 -> off tune and why(because freq bin is too wide, can reconstruct to the original signal)\\
+3. what if taking too big of a hop -> discontinuity loss of information\\
+3.talk about phase vocoder and \textbf{pretend} it is working perfectly \\
+4. graphs 
 \section{Conclusion and Summary}
 \section{Appendix A: MATLAB  }
 \section{Appendix B: MATLAB }
