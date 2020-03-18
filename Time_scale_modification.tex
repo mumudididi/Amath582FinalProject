@@ -1,0 +1,174 @@
+\documentclass[11pt]{article}
+\usepackage{subfig}
+\usepackage{tikz}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage{amsthm,amsfonts}
+\newcommand{\bmmax}{0}
+\newcommand{\hmmax}{0}
+\usepackage{amsmath,amssymb,bm,bbm}
+\usepackage{relsize}
+\usepackage{graphicx}
+\usepackage{float}
+
+\usetikzlibrary{arrows,calc,patterns,angles,quotes,3d,arrows.meta,decorations.pathreplacing}
+
+\usepackage{anyfontsize}
+\usepackage[left=1in,right=1in,top=0.5in,bottom=.55in,footskip=.5in]{geometry}
+\usepackage[stretch=10,shrink=10]{microtype}
+% Import \ast symbol from cm
+\DeclareFontFamily{OMS}{kstcmsy}{\skewchar\font48 }
+\DeclareFontShape{OMS}{kstcmsy}{m}{n}{%
+      <5><5.5><6><7><8><9><10>gen*cmsy%
+      <10.5><10.95><12><14.4><17.28><20.74><24.88>cmsy10%
+      }{}
+\DeclareFontShape{OMS}{kstcmsy}{b}{n}{%
+      <5><5.5><6><7><8><9>gen*cmbsy%
+      <10><10.95><12><14.4><17.28><20.74><24.88>cmbsy10%
+      }{}
+\DeclareSymbolFont{kstsymbols}{OMS}{kstcmsy}{m}{n}
+
+\DeclareFontFamily{OML}{kstcmm}{\skewchar\font127 }
+\DeclareFontShape{OML}{kstcmm}{m}{it}%
+     {<5><5.5><6><7><8><9>gen*cmmi%
+      <10><10.5><10.95>cmmi10%
+      <12><14.4><17.28><20.74><24.88>cmmi12%
+      }{}
+\DeclareFontShape{OML}{kstcmm}{b}{it}{%
+      <5><5.5><6><7><8><9>gen*cmmib%
+      <10><10.95><12><14.4><17.28><20.74><24.88>cmmib10%
+      }{}
+\DeclareFontShape{OML}{kstcmm}{bx}{it}%
+   {<->ssub*cmm/b/it}{}
+\DeclareSymbolFont{kstletters}     {OML}{kstcmm} {m}{it}
+\DeclareMathSymbol{\ast}{\mathbin}{kstsymbols}{"03}
+\DeclareMathSymbol{\star}{\mathbin}{kstletters}{"3F}
+
+\renewcommand{\rmdefault}{zpltlf} % Roman font for use in math mode
+\usepackage{newpxmath}
+\usepackage{newpxtext}
+
+\setlength{\parindent}{1.8em}
+\renewcommand{\baselinestretch}{1.4}
+
+
+% ----------------- commands --------------------
+\renewcommand*{\vec}[1]{\mathbf{#1}}
+\newcommand{\gvec}[1]{\bm{#1}}
+
+\DeclareMathOperator{\fft}{fft}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\atantwo}{atan2}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\lcm}{lcm}
+\DeclareMathOperator{\Aut}{Aut}
+\DeclareMathOperator{\Inn}{Inn}
+\DeclareMathOperator{\orb}{orb}
+\DeclareMathOperator{\stab}{stab}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\newcommand*{\R}{\ensuremath{\mathbb{R}}}
+\newcommand*{\N}{\ensuremath{\mathbb{N}}}
+\newcommand*{\Z}{\ensuremath{\mathbb{Z}}}
+\newcommand*{\Cplx}{\ensuremath{\mathbb{C}}}
+\newcommand*{\Q}{\ensuremath{\mathbb{Q}}}
+% transpose
+\newcommand*{\Trans}{\ensuremath{{\mkern-1.5mu\mathsf{T}}}}
+\newcommand{\Conj}[1]{\overline{#1}}
+\newcommand{\Hermconj}{\ensuremath{\mathsf{H}}}
+\newcommand{\One}{\ensuremath{\mathlarger{\mathbbm{1}}}}
+
+
+\title{\vspace{-7.5ex}\textbf{\Large Time-Scale Modification}\vspace{-1.7ex}}
+\author{Chuanmudi Qin, TianLin Gu}
+\date{\vspace{-1ex}Mar 19, 2020\vspace{-5ex}}
+%%%%%%%%%%%%%%%%python%%%%%%%%%%%%%%
+\usepackage[utf8]{inputenc}
+
+% Default fixed font does not support bold face
+\DeclareFixedFont{\ttb}{T1}{txtt}{bx}{n}{8} % for bold
+\DeclareFixedFont{\ttm}{T1}{txtt}{m}{n}{8}  % for normal
+
+% Custom colors
+\usepackage{color}
+\definecolor{deepblue}{rgb}{0,0,0.5}
+\definecolor{deepred}{rgb}{0.6,0,0}
+\definecolor{deepgreen}{rgb}{0,0.5,0}
+
+\usepackage{listings}
+
+% Python style for highlighting
+\newcommand\pythonstyle{\lstset{
+language=Python,
+basicstyle=\ttm,
+otherkeywords={self},             % Add keywords here
+keywordstyle=\ttb\color{deepblue},
+emph={MyClass,__init__},          % Custom highlighting
+emphstyle=\ttb\color{deepred},    % Custom highlighting style
+stringstyle=\color{deepgreen},
+frame=tb,                         % Any extra options here
+showstringspaces=false            % 
+}}
+
+
+% Python environment
+\lstnewenvironment{python}[1][]
+{
+\pythonstyle
+\lstset{#1}
+}
+{}
+
+% Python for external files
+\newcommand\pythonexternal[2][]{{
+\pythonstyle
+\lstinputlisting[#1]{#2}}}
+
+% Python for inline
+\newcommand\pythoninline[1]{{\pythonstyle\lstinline!#1!}}
+\begin{document}
+\maketitle
+\section{Abstract}
+\section{Overview and Introduction}
+When watching videos or listening music online nowadays, setting playback speed is a common feature offered by almost all 
+platforms. One natural question for those who are curious to ask is, "what is the mathematics behind it?", and "how can I implement the algorithm?".  
+\begin{figure}[H]
+\centering        
+\includegraphics[height=6.5cm, width=4cm]{images/youtube-playback-speed-options.jpg}
+\caption{playback speed}
+\end{figure}
+\noindent Often, one would think this is a easy question to answer which could be solved by simply playing the signal back at a faster  or slower speed. However, this would create a serious issue, that is, what will be heard is not the original record anymore since the signal in frequency domain is also stretched or shrunken. This is because, although melodies are continuous signals, when stored in computer, they are discretized and sampled under a fixed sampling rate. One common sampling rate is 44.1kHz, meaning the 44100 points are sampled every second. Time and frequency are connected by sampling rate, therefore, simply stretching or shrinking the audio will change the frequencies at the same time.    \\
+\textcolor{red}{need pictures here.}\\
+\noindent One simple solution to this is skipping points when faster playback speed is needed or doubling points when lower playback speed is needed; however, this introduces audible artifact. Therefore, more advanced algorithms for TSM are needed. \\
+In the following sections, two algorithms are explored and discussed. The first one is a naive, Overlapping-add(OLA) method; the second one is Phase Vocoder(PV) that is based on Short-Time Fourier Transform(STFT) and OLA.  
+\section{Theoretical Background}
+\subsection{Overlapping Add:}
+\subsection{STFT Analysis: }
+\subsection{STFT Synthesis:}
+\subsection{Phase Vocoder: }
+
+
+
+
+
+
+\section{Algorithm implementation and development }
+\section{Computational Result}
+\section{Conclusion and Summary}
+\section{Appendix A: MATLAB  }
+\section{Appendix B: MATLAB }
+GITHUB: 
+\section{Bibliography}
+\end{document}
+
+\section{Chapter 1}
+\subsection*{Problem 1}
+
+\begin{enumerate}[label=\roman*)]
+  \item $a \in \Z$
+  \item $A^\Trans = A$
+  \item $A\vec{v} = \lambda \vec{v}$
+  \item $\One$
+\end{enumerate}
+pupupu $|a|=15$, pupupupu.
