@@ -1,4 +1,4 @@
-# Amath582FinalProject: Time-Scale Modification
+# Applied Math 582FinalProject: Time-Scale Modification
 
 ## Author: Chuanmudi Qin, Tianqi Gu
 
